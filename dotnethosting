@@ -1,0 +1,97 @@
+## first create instance amazon linux  ...
+
+#### now install dotnet6.0 in it using below commands  ...
+
+  sudo rpm -Uvh https://packages.microsoft.com/config/centos/7/packages-microsoft-prod.rpm
+
+  sudo yum install dotnet-sdk-6.0
+ 
+  sudo yum install aspnetcore-runtime-6.0
+ 
+  sudo yum install dotnet-runtime-6.0
+ 
+ 
+##  also you can use this link to install     https://techviewleo.com/install-and-use-net-core-on-amazon-linux/  ...
+
+###  now setup httpd and conf files in instance  ...
+
+sudo yum update -y
+
+sudo yum -y install httpd 
+
+### going inside the directory    /etc/httpd/conf.d/
+
+## creATE CONF FILE helloapp.conf   AND PASTE BELOW CONTENT IN THIS FILE ....
+
+
+
+<VirtualHost *:*>
+    RequestHeader set "X-Forwarded-Proto" expr=%{REQUEST_SCHEME}s
+</VirtualHost>
+
+<VirtualHost *:80>
+    ProxyPreserveHost On
+    ProxyPass / http://127.0.0.1:5000/
+    ProxyPassReverse / http://127.0.0.1:5000/
+    ServerName www.example.com
+    ServerAlias *.example.com
+</VirtualHost>
+
+
+
+#### now  deploy your code into /var/www/     directory .....
+
+### test your configuration by below commands
+
+sudo apachectl configtest
+sudo systemctl restart httpd
+sudo systemctl enable httpd
+
+
+###  give required permission to files or directory  ...
+
+sudo usermod -a -G apache ec2-user
+sudo chown -R ec2-user:apache /var/www
+sudo chmod 2775 /var/www
+find /var/www -type d -exec sudo chmod 2775 {} \;
+find /var/www -type f -exec sudo chmod 0664 {} \;
+
+
+##  now create a service with below comaand 
+
+sudo nano /etc/systemd/system/kestrel-helloapp.service
+
+##  now paste below data in this file ...
+
+
+
+[Unit]
+Description=Example .NET Web API App running on CentOS 7
+
+[Service]
+WorkingDirectory=/var/www/helloapp                                             ## change app name here
+ExecStart=/usr/local/bin/dotnet /var/www/helloapp/helloapp.dll                  ## also here as well  target your dll file name
+Restart=always                                                                 ### also chamge your dotnet location 
+# Restart service after 10 seconds if the dotnet service crashes:                 ##you can check dotnet location by command   "which dotnet"
+RestartSec=10
+KillSignal=SIGINT
+SyslogIdentifier=dotnet-example
+User=apache
+Environment=ASPNETCORE_ENVIRONMENT=Production 
+
+[Install]
+WantedBy=multi-user.target
+
+
+
+## now run command   -----       sudo systemctl enable kestrel-helloapp.service
+
+for accesing logs command     -----      sudo journalctl -fu kestrel-helloapp.service     
+
+## you can access your app in chrome throgh   -------- http://your_public_ip/target_folder
+
+##my case my url is    ------http://3.137.212.107/weatherforecast
+
+
+
+=------------------------------------------------end---------------------------------------------------------------------
