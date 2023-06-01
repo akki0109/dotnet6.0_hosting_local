@@ -70,7 +70,7 @@ Description=Example .NET Web API App running on CentOS 7
 
 [Service]
 WorkingDirectory=/var/www/helloapp                                             ## change app name here
-ExecStart=/usr/local/bin/dotnet /var/www/helloapp/helloapp.dll                  ## also here as well  target your dll file name
+ExecStart=/usr/bin/dotnet /var/www/helloapp/net6.0/helloapp.dll                  ## also here as well  target your dll file name
 Restart=always                                                                 ### also chamge your dotnet location 
 # Restart service after 10 seconds if the dotnet service crashes:                 ##you can check dotnet location by command   "which dotnet"
 RestartSec=10
